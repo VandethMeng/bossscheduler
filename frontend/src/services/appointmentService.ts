@@ -38,6 +38,44 @@ export const appointmentService = {
     await api.delete(`/appointments/${id}`);
   },
 
+  uploadMeetingMinutes: async (id: string, file: File): Promise<Appointment> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await api.post<ApiResponse<Appointment>>(
+      `/appointments/${id}/meeting-minutes`,
+      formData,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      }
+    );
+    return response.data.data;
+  },
+
+  downloadMeetingMinutes: async (id: string, fileName: string): Promise<void> => {
+    const response = await api.get(`/appointments/${id}/meeting-minutes`, {
+      responseType: 'blob',
+    });
+
+    const url = window.URL.createObjectURL(
+      new Blob([response.data], { type: 'application/pdf' })
+    );
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  },
+
+  deleteMeetingMinutes: async (id: string): Promise<Appointment> => {
+    const response = await api.delete<ApiResponse<Appointment>>(
+      `/appointments/${id}/meeting-minutes`
+    );
+    return response.data.data;
+  },
+
   getStats: async (): Promise<DashboardStats> => {
     const response = await api.get<ApiResponse<DashboardStats>>('/dashboard/stats');
     return response.data.data;

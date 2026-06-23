@@ -1,12 +1,34 @@
 export type AppointmentStatus = 'Scheduled' | 'Completed' | 'Cancelled' | 'Postponed';
 
-export type UserRole = 'Admin' | 'Assistant';
+export type UserRole = 'Admin' | 'Assistant' | 'Organizer';
 
 export interface User {
   id: string;
   email: string;
   name: string;
   role: UserRole;
+  createdAt?: string;
+}
+
+export interface CreateUserInput {
+  email: string;
+  password: string;
+  name: string;
+  role: UserRole;
+}
+
+export interface UpdateUserInput {
+  email?: string;
+  password?: string;
+  name?: string;
+  role?: UserRole;
+}
+
+export interface MeetingMinutes {
+  fileName: string;
+  s3Key: string;
+  uploadedAt: string;
+  fileSize: number;
 }
 
 export interface Appointment {
@@ -20,6 +42,7 @@ export interface Appointment {
   organizer: string;
   attendees: string[];
   status: AppointmentStatus;
+  meetingMinutes?: MeetingMinutes;
   createdAt: string;
   updatedAt: string;
 }
@@ -30,7 +53,7 @@ export interface CreateAppointmentInput {
   meetingDate: string;
   startTime: string;
   endTime: string;
-  location?: string;
+  location: string;
   organizer?: string;
   attendees?: string[];
   status?: AppointmentStatus;

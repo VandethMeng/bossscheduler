@@ -16,7 +16,9 @@ import EventNoteIcon from '@mui/icons-material/EventNote';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import SettingsIcon from '@mui/icons-material/Settings';
+import PeopleIcon from '@mui/icons-material/People';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
 const DRAWER_WIDTH = 260;
 
@@ -25,7 +27,7 @@ interface SidebarProps {
   onMobileClose: () => void;
 }
 
-const menuItems = [
+const baseMenuItems = [
   { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
   { text: 'Appointments', icon: <EventNoteIcon />, path: '/appointments' },
   { text: 'Calendar', icon: <CalendarMonthIcon />, path: '/calendar' },
@@ -33,11 +35,23 @@ const menuItems = [
   { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },
 ];
 
+const adminMenuItem = {
+  text: 'Users',
+  icon: <PeopleIcon />,
+  path: '/users',
+};
+
 const Sidebar = ({ mobileOpen, onMobileClose }: SidebarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  const menuItems =
+    user?.role === 'Admin'
+      ? [...baseMenuItems.slice(0, 4), adminMenuItem, ...baseMenuItems.slice(4)]
+      : baseMenuItems;
 
   const handleNavigate = (path: string) => {
     navigate(path);
@@ -50,7 +64,7 @@ const Sidebar = ({ mobileOpen, onMobileClose }: SidebarProps) => {
     <Box>
       <Toolbar sx={{ px: 2 }}>
         <Typography variant="h6" fontWeight={700} color="primary">
-          Boss Scheduler
+          Appointment Scheduler
         </Typography>
       </Toolbar>
       <List sx={{ px: 1 }}>

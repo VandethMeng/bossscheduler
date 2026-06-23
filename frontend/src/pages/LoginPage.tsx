@@ -78,7 +78,7 @@ const LoginPage = () => {
           <Box textAlign="center" mb={3}>
             <EventIcon sx={{ fontSize: 48, color: 'primary.main', mb: 1 }} />
             <Typography variant="h5" fontWeight={700}>
-              Boss Appointment Scheduler
+              Appointment Scheduler
             </Typography>
             <Typography variant="body2" color="text.secondary" mt={1}>
               Sign in to manage appointments
@@ -157,18 +157,6 @@ const LoginPage = () => {
             >
               {isSubmitting ? 'Signing in...' : 'Sign In'}
             </Button>
-          </Box>
-
-          <Box mt={3} p={2} bgcolor="grey.50" borderRadius={2}>
-            <Typography variant="caption" color="text.secondary" display="block">
-              Demo credentials:
-            </Typography>
-            <Typography variant="caption" display="block">
-              Admin: admin@bossscheduler.com / Admin@123456
-            </Typography>
-            <Typography variant="caption" display="block">
-              Assistant: assistant@bossscheduler.com / Assistant@123456
-            </Typography>
           </Box>
         </CardContent>
       </Card>

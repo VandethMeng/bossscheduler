@@ -22,7 +22,7 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/health', (_req, res) => {
   res.status(200).json({
     success: true,
-    message: 'Boss Appointment Scheduler API is running',
+    message: 'Appointment Scheduler API is running',
     timestamp: new Date().toISOString(),
   });
 });

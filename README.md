@@ -111,7 +111,15 @@ VITE_API_BASE_URL=http://localhost:5000/api
     {
       "Effect": "Allow",
       "Action": ["s3:GetObject", "s3:PutObject"],
-      "Resource": "arn:aws:s3:::boss-scheduler/appointments.json"
+      "Resource": [
+        "arn:aws:s3:::boss-scheduler/appointments.json",
+        "arn:aws:s3:::boss-scheduler/meeting-minutes/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": "s3:DeleteObject",
+      "Resource": "arn:aws:s3:::boss-scheduler/meeting-minutes/*"
     }
   ]
 }
@@ -142,14 +150,7 @@ npm run dev
 
 Open http://localhost:5173
 
-### Default Login Credentials
-
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@bossscheduler.com | Admin@123456 |
-| Assistant | assistant@bossscheduler.com | Assistant@123456 |
-
-Change these in production via environment variables.
+Default users are created on first backend startup from `ADMIN_*` and `ASSISTANT_*` values in `backend/.env`. Change those passwords before production.
 
 ## API Endpoints
 

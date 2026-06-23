@@ -24,10 +24,16 @@ export const env = {
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     bucketName: process.env.S3_BUCKET_NAME || 'boss-scheduler',
     appointmentsKey: process.env.S3_APPOINTMENTS_KEY || 'appointments.json',
+    meetingMinutesPrefix: process.env.S3_MEETING_MINUTES_PREFIX || 'meeting-minutes',
   },
   telegram: {
     botToken: process.env.TELEGRAM_BOT_TOKEN || '',
     chatId: process.env.TELEGRAM_CHAT_ID || '',
+  },
+  reminders: {
+    timezone: 'Asia/Phnom_Penh',
+    dailySummaryHour: parseInt(process.env.DAILY_SUMMARY_HOUR || '5', 10),
+    minutesBeforeMeeting: parseInt(process.env.MEETING_REMINDER_MINUTES || '30', 10),
   },
   defaultUsers: {
     admin: {

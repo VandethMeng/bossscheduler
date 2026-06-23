@@ -10,6 +10,7 @@ const routeTitles: Record<string, string> = {
   '/calendar': 'Calendar',
   '/reports': 'Reports',
   '/settings': 'Settings',
+  '/users': 'User Management',
 };
 
 const getPageTitle = (pathname: string): string => {

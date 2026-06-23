@@ -9,9 +9,16 @@
     "start": "node dist/server.js",
     "lint": "tsc --noEmit",
     "test:s3": "tsx scripts/test-s3.ts",
-    "test:telegram": "tsx scripts/test-telegram.ts"
+    "test:telegram": "tsx scripts/test-telegram.ts",
+    "test:reminders": "tsx scripts/test-reminders.ts",
+    "add-user": "tsx scripts/add-user.ts"
   },
-  "keywords": ["appointments", "scheduler", "telegram", "aws-s3"],
+  "keywords": [
+    "appointments",
+    "scheduler",
+    "telegram",
+    "aws-s3"
+  ],
   "license": "MIT",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.758.0",
@@ -23,6 +30,8 @@
     "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
+    "multer": "^2.2.0",
+    "node-cron": "^4.5.0",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
@@ -31,7 +40,9 @@
     "@types/express": "^5.0.0",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/morgan": "^1.9.9",
+    "@types/multer": "^2.1.0",
     "@types/node": "^22.13.10",
+    "@types/node-cron": "^3.0.11",
     "@types/uuid": "^10.0.0",
     "tsx": "^4.19.3",
     "typescript": "^5.8.2"

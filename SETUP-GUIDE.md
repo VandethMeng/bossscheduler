@@ -62,7 +62,15 @@ Your backend needs permission to read and write that file. We create a special A
         "s3:GetObject",
         "s3:PutObject"
       ],
-      "Resource": "arn:aws:s3:::YOUR-BUCKET-NAME/appointments.json"
+      "Resource": [
+        "arn:aws:s3:::YOUR-BUCKET-NAME/appointments.json",
+        "arn:aws:s3:::YOUR-BUCKET-NAME/meeting-minutes/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": "s3:DeleteObject",
+      "Resource": "arn:aws:s3:::YOUR-BUCKET-NAME/meeting-minutes/*"
     },
     {
       "Effect": "Allow",
@@ -171,7 +179,7 @@ Open **http://localhost:5173**, log in, and create a test appointment. The boss 
 
 | Problem | Fix |
 |---------|-----|
-| S3 "Access Denied" | Check bucket name in `.env` matches exactly. Verify IAM policy has correct bucket name. |
+| S3 "Access Denied" | Check bucket name in `.env` matches exactly. IAM policy must allow `appointments.json` **and** `meeting-minutes/*` (see Step 4). |
 | S3 "NoSuchKey" | Upload `appointments.json` to the bucket (Step 3 above). |
 | Telegram not sending | Check token and chat ID. Make sure you clicked **Start** on the bot first. |
 | Telegram "chat not found" | Chat ID is wrong — repeat Step 2 and copy the `id` from `getUpdates`. |

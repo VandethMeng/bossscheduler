@@ -16,6 +16,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 import { Appointment, AppointmentStatus } from '../types';
 
 interface AppointmentTableProps {
@@ -35,6 +36,11 @@ const statusColors: Record<
 
 const AppointmentTable = ({ appointments, onDelete }: AppointmentTableProps) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'Admin';
+
+  const canDelete = (apt: Appointment) =>
+    apt.status !== 'Completed' || isAdmin;
 
   if (appointments.length === 0) {
     return (
@@ -96,23 +102,27 @@ const AppointmentTable = ({ appointments, onDelete }: AppointmentTableProps) => 
                     <VisibilityIcon fontSize="small" />
                   </IconButton>
                 </Tooltip>
-                <Tooltip title="Edit">
-                  <IconButton
-                    size="small"
-                    onClick={() => navigate(`/appointments/${apt.id}/edit`)}
-                  >
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Delete">
-                  <IconButton
-                    size="small"
-                    color="error"
-                    onClick={() => onDelete(apt)}
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
+                {apt.status !== 'Completed' && (
+                  <Tooltip title="Edit">
+                    <IconButton
+                      size="small"
+                      onClick={() => navigate(`/appointments/${apt.id}/edit`)}
+                    >
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                )}
+                {canDelete(apt) && (
+                  <Tooltip title="Delete">
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() => onDelete(apt)}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                )}
               </TableCell>
             </TableRow>
           ))}

@@ -8,6 +8,8 @@ import AppointmentFormPage from '../pages/AppointmentFormPage';
 import CalendarPage from '../pages/CalendarPage';
 import ReportsPage from '../pages/ReportsPage';
 import SettingsPage from '../pages/SettingsPage';
+import UsersPage from '../pages/UsersPage';
+import AdminRoute from './AdminRoute';
 
 const AppRoutes = () => {
   return (
@@ -24,6 +26,12 @@ const AppRoutes = () => {
           <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+        </Route>
+
+        <Route element={<AdminRoute />}>
+          <Route element={<MainLayout />}>
+            <Route path="/users" element={<UsersPage />} />
+          </Route>
         </Route>
       </Route>
 

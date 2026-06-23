@@ -13,7 +13,9 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useAppointments } from '../hooks/useAppointments';
+import { useAuth } from '../hooks/useAuth';
 import AppointmentForm from '../components/AppointmentForm';
+import MeetingMinutesUpload from '../components/MeetingMinutesUpload';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { Appointment, CreateAppointmentInput } from '../types';
 
@@ -25,6 +27,7 @@ const AppointmentFormPage = () => {
   const isViewMode = Boolean(id) && !isEditMode;
 
   const { getAppointment, createAppointment, updateAppointment } = useAppointments();
+  const { user } = useAuth();
   const [appointment, setAppointment] = useState<Appointment | null>(null);
   const [isLoading, setIsLoading] = useState(Boolean(id));
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,6 +45,15 @@ const AppointmentFormPage = () => {
         .finally(() => setIsLoading(false));
     }
   }, [id, getAppointment]);
+
+  useEffect(() => {
+    if (isEditMode && appointment?.status === 'Completed' && id) {
+      navigate(`/appointments/${id}`, { replace: true });
+    }
+  }, [isEditMode, appointment?.status, id, navigate]);
+
+  const isCompleted = appointment?.status === 'Completed';
+  const showViewOnly = isViewMode || (isEditMode && isCompleted);
 
   const handleCreate = async (data: CreateAppointmentInput) => {
     setIsSubmitting(true);
@@ -77,7 +89,7 @@ const AppointmentFormPage = () => {
   }
 
   const getTitle = () => {
-    if (isViewMode) return 'View Appointment';
+    if (showViewOnly) return 'View Appointment';
     if (isEditMode) return 'Edit Appointment';
     return 'New Appointment';
   };
@@ -94,7 +106,7 @@ const AppointmentFormPage = () => {
         <Typography variant="h5" fontWeight={700}>
           {getTitle()}
         </Typography>
-        {isViewMode && id && (
+        {isViewMode && id && !isCompleted && (
           <Button
             variant="outlined"
             startIcon={<EditIcon />}
@@ -105,6 +117,14 @@ const AppointmentFormPage = () => {
           </Button>
         )}
       </Box>
+
+      {isCompleted && showViewOnly && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          {isCompleted && user?.role !== 'Admin'
+            ? 'This meeting is completed and cannot be edited or deleted. You can upload meeting minutes PDF below.'
+            : 'This meeting is completed and cannot be edited. As an admin, you can delete it from the appointments list if needed. You can upload meeting minutes PDF below.'}
+        </Alert>
+      )}
 
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
@@ -118,13 +138,17 @@ const AppointmentFormPage = () => {
       )}
 
       <Paper sx={{ p: { xs: 2, sm: 4 }, borderRadius: 2 }}>
-        {isViewMode && appointment ? (
+        {showViewOnly && appointment ? (
           <Box>
             <Box display="flex" alignItems="center" gap={2} mb={2}>
               <Typography variant="h6" fontWeight={600}>
                 {appointment.title}
               </Typography>
-              <Chip label={appointment.status} color="primary" size="small" />
+              <Chip
+                label={appointment.status}
+                color={isCompleted ? 'success' : 'primary'}
+                size="small"
+              />
             </Box>
             <Divider sx={{ mb: 3 }} />
             <Grid container spacing={2}>
@@ -171,6 +195,10 @@ const AppointmentFormPage = () => {
                 </Typography>
               </Grid>
             </Grid>
+            <MeetingMinutesUpload
+              appointment={appointment}
+              onUpdated={setAppointment}
+            />
           </Box>
         ) : (
           <AppointmentForm

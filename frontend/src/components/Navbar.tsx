@@ -75,7 +75,13 @@ const Navbar = ({ onMenuClick, title = 'Dashboard' }: NavbarProps) => {
           <Chip
             label={user?.role}
             size="small"
-            color={user?.role === 'Admin' ? 'primary' : 'default'}
+            color={
+              user?.role === 'Admin'
+                ? 'primary'
+                : user?.role === 'Organizer'
+                  ? 'secondary'
+                  : 'default'
+            }
           />
           <IconButton onClick={handleMenuOpen}>
             <Avatar sx={{ width: 36, height: 36, bgcolor: 'primary.main' }}>

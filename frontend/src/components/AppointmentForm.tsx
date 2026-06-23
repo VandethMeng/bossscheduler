@@ -10,6 +10,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Appointment, AppointmentStatus, CreateAppointmentInput } from '../types';
+import { MEETING_LOCATIONS, MeetingLocation } from '../constants/meetingLocations';
 
 const statusOptions: AppointmentStatus[] = [
   'Scheduled',
@@ -18,7 +19,19 @@ const statusOptions: AppointmentStatus[] = [
   'Postponed',
 ];
 
-const schema = yup.object({
+type FormData = {
+  title: string;
+  description: string;
+  meetingDate: string;
+  startTime: string;
+  endTime: string;
+  location: string;
+  organizer: string;
+  attendees: string;
+  status: AppointmentStatus;
+};
+
+const schema: yup.ObjectSchema<FormData> = yup.object({
   title: yup.string().required('Title is required'),
   description: yup.string().default(''),
   meetingDate: yup
@@ -38,16 +51,17 @@ const schema = yup.object({
       if (!startTime || !value) return true;
       return value > startTime;
     }),
-  location: yup.string().default(''),
+  location: yup
+    .string()
+    .oneOf([...MEETING_LOCATIONS], 'Please select a location')
+    .required('Location is required'),
   organizer: yup.string().default(''),
   attendees: yup.string().default(''),
   status: yup
     .string()
     .oneOf(statusOptions)
-    .required('Status is required') as yup.Schema<AppointmentStatus>,
+    .required('Status is required'),
 });
-
-type FormData = yup.InferType<typeof schema>;
 
 interface AppointmentFormProps {
   initialData?: Appointment;
@@ -62,19 +76,25 @@ const AppointmentForm = ({
   isSubmitting = false,
   submitLabel = 'Save Appointment',
 }: AppointmentFormProps) => {
+  const defaultLocation: MeetingLocation | '' =
+    initialData?.location &&
+    (MEETING_LOCATIONS as readonly string[]).includes(initialData.location)
+      ? (initialData.location as MeetingLocation)
+      : '';
+
   const {
     control,
     handleSubmit,
     formState: { errors },
   } = useForm<FormData>({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(schema) as never,
     defaultValues: {
       title: initialData?.title || '',
       description: initialData?.description || '',
       meetingDate: initialData?.meetingDate || '',
       startTime: initialData?.startTime || '',
       endTime: initialData?.endTime || '',
-      location: initialData?.location || '',
+      location: defaultLocation || '',
       organizer: initialData?.organizer || '',
       attendees: initialData?.attendees?.join(', ') || '',
       status: initialData?.status || 'Scheduled',
@@ -88,7 +108,7 @@ const AppointmentForm = ({
       meetingDate: data.meetingDate,
       startTime: data.startTime,
       endTime: data.endTime,
-      location: data.location,
+      location: data.location as MeetingLocation,
       organizer: data.organizer,
       attendees: data.attendees
         ? data.attendees.split(',').map((a) => a.trim()).filter(Boolean)
@@ -198,7 +218,24 @@ const AppointmentForm = ({
             name="location"
             control={control}
             render={({ field }) => (
-              <TextField {...field} label="Location" fullWidth />
+              <TextField
+                {...field}
+                select
+                label="Location"
+                fullWidth
+                required
+                error={!!errors.location}
+                helperText={errors.location?.message}
+              >
+                <MenuItem value="">
+                  <em>Select a location</em>
+                </MenuItem>
+                {MEETING_LOCATIONS.map((loc) => (
+                  <MenuItem key={loc} value={loc}>
+                    {loc}
+                  </MenuItem>
+                ))}
+              </TextField>
             )}
           />
         </Grid>
