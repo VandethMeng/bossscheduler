@@ -4,6 +4,13 @@ export function getTodayDateString(timezone: string = APP_TIMEZONE): string {
   return new Date().toLocaleDateString('en-CA', { timeZone: timezone });
 }
 
+export function isMeetingDateOnOrAfterToday(
+  meetingDate: string,
+  timezone: string = APP_TIMEZONE
+): boolean {
+  return meetingDate >= getTodayDateString(timezone);
+}
+
 export function getMinutesSinceMidnight(timezone: string = APP_TIMEZONE): number {
   const now = new Date();
   const parts = new Intl.DateTimeFormat('en-US', {

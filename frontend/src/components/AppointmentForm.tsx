@@ -11,6 +11,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Appointment, AppointmentStatus, CreateAppointmentInput } from '../types';
 import { MEETING_LOCATIONS, MeetingLocation } from '../constants/meetingLocations';
+import { getTodayDateString } from '../utils/date';
 
 const statusOptions: AppointmentStatus[] = [
   'Scheduled',
@@ -37,7 +38,12 @@ const schema: yup.ObjectSchema<FormData> = yup.object({
   meetingDate: yup
     .string()
     .required('Meeting date is required')
-    .matches(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD'),
+    .matches(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD')
+    .test(
+      'not-past',
+      'Meeting date must be today or a future date',
+      (value) => !value || value >= getTodayDateString()
+    ),
   startTime: yup
     .string()
     .required('Start time is required')
@@ -76,6 +82,7 @@ const AppointmentForm = ({
   isSubmitting = false,
   submitLabel = 'Save Appointment',
 }: AppointmentFormProps) => {
+  const minMeetingDate = getTodayDateString();
   const defaultLocation: MeetingLocation | '' =
     initialData?.location &&
     (MEETING_LOCATIONS as readonly string[]).includes(initialData.location)
@@ -168,6 +175,7 @@ const AppointmentForm = ({
                 fullWidth
                 required
                 InputLabelProps={{ shrink: true }}
+                inputProps={{ min: minMeetingDate }}
                 error={!!errors.meetingDate}
                 helperText={errors.meetingDate?.message}
               />

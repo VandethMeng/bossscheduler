@@ -174,6 +174,17 @@ Default users are created on first backend startup from `ADMIN_*` and `ASSISTANT
 
 ## Deployment
 
+**Full production + CI/CD guide:** see [DEPLOYMENT.md](./DEPLOYMENT.md)
+
+### CI/CD (GitHub Actions)
+
+| Workflow | When it runs |
+|----------|----------------|
+| `CI` | Every push/PR — lint & build backend + frontend |
+| `Deploy Production` | Push to `main` — deploy frontend to S3, backend to EC2 via SSH |
+
+Configure GitHub Actions secrets (`VITE_API_BASE_URL`, `S3_FRONTEND_BUCKET`, `EC2_HOST`, etc.) as described in [DEPLOYMENT.md](./DEPLOYMENT.md).
+
 ### Frontend → AWS S3 Static Website Hosting
 
 ```bash

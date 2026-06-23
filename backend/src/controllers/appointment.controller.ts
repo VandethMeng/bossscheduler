@@ -5,6 +5,14 @@ import { s3Service } from '../services/S3Service';
 import { telegramService } from '../services/TelegramService';
 import { AppointmentStatus } from '../models/Appointment';
 import { MEETING_LOCATIONS } from '../constants/meetingLocations';
+import { getTodayDateString } from '../utils/timezone';
+
+const meetingDateNotInPast = (value: string) => {
+  if (value < getTodayDateString()) {
+    throw new Error('Meeting date must be today or a future date');
+  }
+  return true;
+};
 
 const statusValues: AppointmentStatus[] = [
   'Scheduled',
@@ -18,7 +26,8 @@ export const createAppointmentValidation = [
   body('description').optional().isString(),
   body('meetingDate')
     .matches(/^\d{4}-\d{2}-\d{2}$/)
-    .withMessage('Meeting date must be in YYYY-MM-DD format'),
+    .withMessage('Meeting date must be in YYYY-MM-DD format')
+    .custom(meetingDateNotInPast),
   body('startTime')
     .matches(/^\d{2}:\d{2}$/)
     .withMessage('Start time must be in HH:MM format'),
@@ -46,7 +55,8 @@ export const updateAppointmentValidation = [
   body('meetingDate')
     .optional()
     .matches(/^\d{4}-\d{2}-\d{2}$/)
-    .withMessage('Meeting date must be in YYYY-MM-DD format'),
+    .withMessage('Meeting date must be in YYYY-MM-DD format')
+    .custom(meetingDateNotInPast),
   body('startTime')
     .optional()
     .matches(/^\d{2}:\d{2}$/)
