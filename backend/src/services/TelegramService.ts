@@ -33,50 +33,38 @@ export class TelegramService {
     return `${startTime.slice(0, 5)} – ${endTime.slice(0, 5)}`;
   }
 
-  /** Header — bold, primary emphasis */
   private header(title: string): string {
-    return [
-      '━━━━━━━━━━━━━━━━━━━━',
-      `<b>${this.escapeHtml(title)}</b>`,
-      '━━━━━━━━━━━━━━━━━━━━',
-    ].join('\n');
+    return `<b>${this.escapeHtml(title)}</b>`;
   }
 
-  /** Footer — italic, muted tone */
   private footer(text: string): string {
-    return [
-      '━━━━━━━━━━━━━━━━━━━━',
-      `<i>${this.escapeHtml(text)}</i>`,
-    ].join('\n');
+    return `<i>${this.escapeHtml(text)}</i>`;
   }
 
-  /** Meta line — italic labels (date, timezone) */
   private metaField(label: string, value: string): string {
-    return `<i>${this.escapeHtml(label)}:</i> <b>${this.escapeHtml(value)}</b>`;
+    return `<b>${this.escapeHtml(label)}:</b> ${this.escapeHtml(value)}`;
   }
 
-  /** Standard field — bold label, normal value */
   private field(label: string, value: string): string {
-    return `<b>${this.escapeHtml(label)}</b>  ${this.escapeHtml(value)}`;
+    return `<b>${this.escapeHtml(label)}:</b> ${this.escapeHtml(value)}`;
   }
 
-  /** Time value — monospace (appears in a distinct grey tone in Telegram) */
-  private timeValue(startTime: string, endTime: string, highlight = false): string {
+  private timeField(startTime: string, endTime: string, highlight = false): string {
     const time = this.escapeHtml(this.formatTime(startTime, endTime));
-    if (highlight) {
-      return `<u><code>${time}</code></u>`;
+    const value = highlight ? `<u><code>${time}</code></u>` : `<code>${time}</code>`;
+    return `<b>Time:</b> ${value}`;
+  }
+
+  private alertBlock(title: string, detail?: string): string {
+    const lines = [`<b>${this.escapeHtml(title)}</b>`];
+    if (detail) {
+      lines.push(this.escapeHtml(detail));
     }
-    return `<code>${time}</code>`;
+    return `<blockquote>${lines.join('\n')}</blockquote>`;
   }
 
-  /** Warning block — blockquote with underline (stands out as an alert) */
-  private alertBlock(text: string): string {
-    return `<blockquote><b><u>${this.escapeHtml(text)}</u></b></blockquote>`;
-  }
-
-  /** Summary stat — code style for numbers */
   private statLine(label: string, value: string | number): string {
-    return `<b>${this.escapeHtml(label)}</b>  <code>${this.escapeHtml(String(value))}</code>`;
+    return `<b>${this.escapeHtml(label)}:</b> ${this.escapeHtml(String(value))}`;
   }
 
   private getOverlapSummaries(appointments: Appointment[]): OverlapSlotSummary[] {
@@ -89,8 +77,8 @@ export class TelegramService {
 
   private overlapLabel(overlapType: 'exact' | 'partial'): string {
     return overlapType === 'exact'
-      ? 'DUPLICATED TIME SLOT'
-      : 'OVERLAPPING TIME SLOT';
+      ? 'Duplicated time slot'
+      : 'Overlapping time slot';
   }
 
   private formatAppointmentConflictSections(
@@ -109,23 +97,23 @@ export class TelegramService {
         const label =
           conflict.overlapType === 'exact' ? 'Exact duplicate' : 'Partial overlap';
         return [
-          `  •  <code>${this.escapeHtml(conflict.timeSlot)}</code>  ${this.escapeHtml(conflict.title)}`,
-          `     <i>${label}</i>  ·  ${this.escapeHtml(conflict.location)}`,
+          `• <code>${this.escapeHtml(conflict.timeSlot)}</code> · ${this.escapeHtml(conflict.title)}`,
+          `  <i>${label}</i> · ${this.escapeHtml(conflict.location)}`,
         ].join('\n');
       });
 
-      sections.push('', this.alertBlock('⚠ OVERLAPPING TIME SLOT'), '', ...lines);
+      sections.push('', this.alertBlock('Schedule conflict', 'Overlapping time slot'), '', ...lines);
     }
 
     if (locationConflicts.length > 0) {
       const lines = locationConflicts.map(
         (conflict) =>
-          `  •  <b>${this.escapeHtml(conflict.location)}</b>  <code>${this.escapeHtml(conflict.timeSlot)}</code>  ${this.escapeHtml(conflict.title)}`
+          `• <b>${this.escapeHtml(conflict.location)}</b> · <code>${this.escapeHtml(conflict.timeSlot)}</code> · ${this.escapeHtml(conflict.title)}`
       );
 
       sections.push(
         '',
-        this.alertBlock('⚠ SAME LOCATION BOOKED AT OVERLAPPING TIME'),
+        this.alertBlock('Location conflict', 'Same location booked at overlapping times'),
         '',
         ...lines
       );
@@ -140,17 +128,17 @@ export class TelegramService {
         group.overlapType === 'exact' ? 'Exact duplicate' : 'Partial overlap';
       const meetingLines = group.meetings.map(
         (m) =>
-          `     <code>${this.escapeHtml(m.timeSlot)}</code>  ${this.escapeHtml(m.title)}\n     📍 ${this.escapeHtml(m.location)}`
+          `  <code>${this.escapeHtml(m.timeSlot)}</code> · ${this.escapeHtml(m.title)}\n  ${this.escapeHtml(m.location)}`
       );
 
       return [
-        `  <b>Group ${group.groupIndex}</b>  <i>(${typeLabel} · ${group.count} meetings)</i>`,
+        `<b>Group ${group.groupIndex}</b> <i>(${typeLabel}, ${group.count} meetings)</i>`,
         ...meetingLines,
       ].join('\n');
     });
 
     return [
-      this.alertBlock('⚠ OVERLAPPING / DUPLICATED TIME SLOTS DETECTED'),
+      this.alertBlock('Schedule overview', 'Overlapping or duplicated time slots detected'),
       '',
       ...lines,
     ].join('\n');
@@ -171,19 +159,19 @@ export class TelegramService {
 
       lines.push(
         this.alertBlock(
-          `${label} · ${slotInfo.timeSlot} · Meeting ${slotInfo.slotIndex} of ${slotInfo.slotTotal}`
+          label,
+          `${slotInfo.timeSlot} · Meeting ${slotInfo.slotIndex} of ${slotInfo.slotTotal}`
         )
       );
       lines.push(
-        `<b>Meeting ${index} of ${total}</b>  <i>(conflicts with: ${this.escapeHtml(conflicts)})</i>`
+        `<b>${index}. ${this.escapeHtml(appointment.title)}</b> <i>(conflicts with ${this.escapeHtml(conflicts)})</i>`
       );
     } else {
-      lines.push(`<b>Meeting ${index} of ${total}</b>`);
+      lines.push(`<b>${index}. ${this.escapeHtml(appointment.title)}</b>`);
     }
 
     lines.push(
-      this.field('Title', appointment.title),
-      `<b>Time</b>  ${this.timeValue(appointment.startTime, appointment.endTime, hasOverlap)}`,
+      this.timeField(appointment.startTime, appointment.endTime, hasOverlap),
       this.field('Location', appointment.location || 'Not specified')
     );
 
@@ -196,7 +184,7 @@ export class TelegramService {
     }
 
     if (appointment.description) {
-      lines.push(`<i>Notes</i>  ${this.escapeHtml(appointment.description)}`);
+      lines.push(`<b>Notes:</b> ${this.escapeHtml(appointment.description)}`);
     }
 
     return lines.join('\n');
@@ -233,16 +221,16 @@ export class TelegramService {
     allAppointments: Appointment[] = []
   ): Promise<void> {
     const message = [
-      this.header('NEW APPOINTMENT'),
+      this.header('New appointment'),
       '',
       this.field('Title', appointment.title),
       this.metaField('Date', formatDateLabel(appointment.meetingDate, this.timezone)),
-      `<b>Time</b>  ${this.timeValue(appointment.startTime, appointment.endTime)}`,
+      this.timeField(appointment.startTime, appointment.endTime),
       this.field('Location', appointment.location),
       this.metaField('Timezone', this.timezone),
       ...this.formatAppointmentConflictSections(appointment, allAppointments),
       '',
-      this.footer('Appointment Scheduler'),
+      this.footer('Boss Scheduler'),
     ].join('\n');
 
     await this.sendMessage(message);
@@ -253,16 +241,16 @@ export class TelegramService {
     allAppointments: Appointment[] = []
   ): Promise<void> {
     const message = [
-      this.header('APPOINTMENT UPDATED'),
+      this.header('Appointment updated'),
       '',
       this.field('Title', appointment.title),
       this.metaField('Date', formatDateLabel(appointment.meetingDate, this.timezone)),
-      `<b>Time</b>  ${this.timeValue(appointment.startTime, appointment.endTime)}`,
+      this.timeField(appointment.startTime, appointment.endTime),
       this.field('Location', appointment.location),
       this.field('Status', appointment.status),
       ...this.formatAppointmentConflictSections(appointment, allAppointments),
       '',
-      this.footer('Appointment Scheduler'),
+      this.footer('Boss Scheduler'),
     ].join('\n');
 
     await this.sendMessage(message);
@@ -270,13 +258,13 @@ export class TelegramService {
 
   async notifyAppointmentDeleted(appointment: Appointment): Promise<void> {
     const message = [
-      this.header('APPOINTMENT CANCELLED'),
+      this.header('Appointment cancelled'),
       '',
       this.field('Title', appointment.title),
       this.metaField('Date', formatDateLabel(appointment.meetingDate, this.timezone)),
-      `<b>Time</b>  ${this.timeValue(appointment.startTime, appointment.endTime)}`,
+      this.timeField(appointment.startTime, appointment.endTime),
       '',
-      this.footer('Appointment Scheduler'),
+      this.footer('Boss Scheduler'),
     ].join('\n');
 
     await this.sendMessage(message);
@@ -288,14 +276,14 @@ export class TelegramService {
   ): Promise<void> {
     if (appointments.length === 0) {
       const message = [
-        this.header('DAILY MEETING SCHEDULE'),
+        this.header('Daily meeting schedule'),
         '',
         this.metaField('Date', dateLabel),
         this.metaField('Timezone', this.timezone),
         '',
-        '<i>No scheduled meetings for today.</i>',
+        'No meetings scheduled for today.',
         '',
-        this.footer('Have a productive day.'),
+        this.footer('Boss Scheduler'),
       ].join('\n');
 
       await this.sendMessage(message);
@@ -314,7 +302,7 @@ export class TelegramService {
     );
 
     const sections = [
-      this.header('DAILY MEETING SCHEDULE'),
+      this.header('Daily meeting schedule'),
       '',
       this.metaField('Date', dateLabel),
       this.metaField('Timezone', this.timezone),
@@ -328,9 +316,11 @@ export class TelegramService {
       ...meetingBlocks,
       '',
       this.statLine('Total meetings', appointments.length),
-      this.statLine('Overlapping groups', overlapGroups.length),
+      ...(overlapGroups.length > 0
+        ? [this.statLine('Overlapping groups', overlapGroups.length)]
+        : []),
       '',
-      this.footer('Please review your schedule for the day.')
+      this.footer('Boss Scheduler'),
     );
 
     await this.sendMessage(sections.join('\n'));
@@ -345,9 +335,9 @@ export class TelegramService {
     const hasOverlap = Boolean(slotInfo);
     const { locationConflicts } = getAppointmentConflicts(appointment, allAppointments);
     const sections = [
-      this.header('MEETING REMINDER'),
+      this.header('Meeting reminder'),
       '',
-      `<b>Starts in <code>${minutesBefore}</code> minutes</b>`,
+      `<b>Starts in ${minutesBefore} minutes</b>`,
     ];
 
     if (hasOverlap && slotInfo) {
@@ -357,21 +347,22 @@ export class TelegramService {
       sections.push(
         '',
         this.alertBlock(
-          `${label} · ${slotInfo.timeSlot} · Meeting ${slotInfo.slotIndex} of ${slotInfo.slotTotal}`
+          label,
+          `${slotInfo.timeSlot} · Meeting ${slotInfo.slotIndex} of ${slotInfo.slotTotal}`
         ),
-        `<i>Conflicts with: ${this.escapeHtml(conflicts)}</i>`
+        `<i>Conflicts with ${this.escapeHtml(conflicts)}</i>`
       );
     }
 
     if (locationConflicts.length > 0) {
       const lines = locationConflicts.map(
         (conflict) =>
-          `  •  <b>${this.escapeHtml(conflict.location)}</b>  <code>${this.escapeHtml(conflict.timeSlot)}</code>  ${this.escapeHtml(conflict.title)}`
+          `• <b>${this.escapeHtml(conflict.location)}</b> · <code>${this.escapeHtml(conflict.timeSlot)}</code> · ${this.escapeHtml(conflict.title)}`
       );
 
       sections.push(
         '',
-        this.alertBlock('⚠ SAME LOCATION BOOKED AT OVERLAPPING TIME'),
+        this.alertBlock('Location conflict', 'Same location booked at overlapping times'),
         '',
         ...lines
       );
@@ -381,11 +372,11 @@ export class TelegramService {
       '',
       this.field('Title', appointment.title),
       this.metaField('Date', formatDateLabel(appointment.meetingDate, this.timezone)),
-      `<b>Time</b>  ${this.timeValue(appointment.startTime, appointment.endTime, hasOverlap)}`,
+      this.timeField(appointment.startTime, appointment.endTime, hasOverlap),
       this.field('Location', appointment.location),
       this.metaField('Timezone', this.timezone),
       '',
-      this.footer('Appointment Scheduler')
+      this.footer('Boss Scheduler')
     );
 
     await this.sendMessage(sections.join('\n'));
