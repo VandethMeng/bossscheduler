@@ -10,7 +10,6 @@ import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Appointment, AppointmentStatus, CreateAppointmentInput } from '../types';
-import { MEETING_LOCATIONS, MeetingLocation } from '../constants/meetingLocations';
 import { getTodayDateString } from '../utils/date';
 
 const statusOptions: AppointmentStatus[] = [
@@ -57,10 +56,7 @@ const schema: yup.ObjectSchema<FormData> = yup.object({
       if (!startTime || !value) return true;
       return value > startTime;
     }),
-  location: yup
-    .string()
-    .oneOf([...MEETING_LOCATIONS], 'Please select a location')
-    .required('Location is required'),
+  location: yup.string().trim().required('Location is required'),
   organizer: yup.string().default(''),
   attendees: yup.string().default(''),
   status: yup
@@ -83,11 +79,6 @@ const AppointmentForm = ({
   submitLabel = 'Save Appointment',
 }: AppointmentFormProps) => {
   const minMeetingDate = getTodayDateString();
-  const defaultLocation: MeetingLocation | '' =
-    initialData?.location &&
-    (MEETING_LOCATIONS as readonly string[]).includes(initialData.location)
-      ? (initialData.location as MeetingLocation)
-      : '';
 
   const {
     control,
@@ -101,7 +92,7 @@ const AppointmentForm = ({
       meetingDate: initialData?.meetingDate || '',
       startTime: initialData?.startTime || '',
       endTime: initialData?.endTime || '',
-      location: defaultLocation || '',
+      location: initialData?.location || '',
       organizer: initialData?.organizer || '',
       attendees: initialData?.attendees?.join(', ') || '',
       status: initialData?.status || 'Scheduled',
@@ -115,7 +106,7 @@ const AppointmentForm = ({
       meetingDate: data.meetingDate,
       startTime: data.startTime,
       endTime: data.endTime,
-      location: data.location as MeetingLocation,
+      location: data.location.trim(),
       organizer: data.organizer,
       attendees: data.attendees
         ? data.attendees.split(',').map((a) => a.trim()).filter(Boolean)
@@ -228,22 +219,13 @@ const AppointmentForm = ({
             render={({ field }) => (
               <TextField
                 {...field}
-                select
                 label="Location"
                 fullWidth
                 required
+                placeholder="e.g. Conference Room A"
                 error={!!errors.location}
                 helperText={errors.location?.message}
-              >
-                <MenuItem value="">
-                  <em>Select a location</em>
-                </MenuItem>
-                {MEETING_LOCATIONS.map((loc) => (
-                  <MenuItem key={loc} value={loc}>
-                    {loc}
-                  </MenuItem>
-                ))}
-              </TextField>
+              />
             )}
           />
         </Grid>

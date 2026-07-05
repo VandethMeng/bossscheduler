@@ -4,7 +4,6 @@ import { asyncHandler } from '../utils/asyncHandler';
 import { s3Service } from '../services/S3Service';
 import { telegramService } from '../services/TelegramService';
 import { AppointmentStatus } from '../models/Appointment';
-import { MEETING_LOCATIONS } from '../constants/meetingLocations';
 import { getTodayDateString } from '../utils/timezone';
 
 const meetingDateNotInPast = (value: string) => {
@@ -34,12 +33,7 @@ export const createAppointmentValidation = [
   body('endTime')
     .matches(/^\d{2}:\d{2}$/)
     .withMessage('End time must be in HH:MM format'),
-  body('location')
-    .trim()
-    .notEmpty()
-    .withMessage('Location is required')
-    .isIn([...MEETING_LOCATIONS])
-    .withMessage(`Location must be one of: ${MEETING_LOCATIONS.join(', ')}`),
+  body('location').trim().notEmpty().withMessage('Location is required'),
   body('organizer').optional().isString(),
   body('attendees').optional().isArray(),
   body('status')
@@ -65,12 +59,7 @@ export const updateAppointmentValidation = [
     .optional()
     .matches(/^\d{2}:\d{2}$/)
     .withMessage('End time must be in HH:MM format'),
-  body('location')
-    .trim()
-    .notEmpty()
-    .withMessage('Location is required')
-    .isIn([...MEETING_LOCATIONS])
-    .withMessage(`Location must be one of: ${MEETING_LOCATIONS.join(', ')}`),
+  body('location').optional().trim().notEmpty().withMessage('Location cannot be empty'),
   body('organizer').optional().isString(),
   body('attendees').optional().isArray(),
   body('status')
