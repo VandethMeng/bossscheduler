@@ -1,4 +1,5 @@
 import { Appointment, AppointmentStatus } from '../models/Appointment';
+import { getTodayDateString, getZonedDateTimeMs } from '../utils/timezone';
 import { s3Service } from './S3Service';
 
 export interface DashboardStats {
@@ -11,13 +12,13 @@ export interface DashboardStats {
 
 export class DashboardService {
   async getStats(): Promise<DashboardStats> {
-    const appointments = await s3Service.getAppointments();
-    const today = new Date().toISOString().split('T')[0];
-    const now = new Date();
+    const { appointments } = await s3Service.completeExpiredAppointments();
+    const today = getTodayDateString();
+    const now = Date.now();
 
     const upcoming = appointments.filter((apt) => {
-      const meetingDateTime = new Date(`${apt.meetingDate}T${apt.startTime}`);
-      return meetingDateTime > now && apt.status === 'Scheduled';
+      const meetingStartMs = getZonedDateTimeMs(apt.meetingDate, apt.startTime);
+      return meetingStartMs > now && apt.status === 'Scheduled';
     }).length;
 
     const todayCount = appointments.filter(

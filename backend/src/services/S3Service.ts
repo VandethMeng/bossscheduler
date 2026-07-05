@@ -342,7 +342,7 @@ export class S3Service {
 
   async completeExpiredAppointments(
     timezone: string = APP_TIMEZONE
-  ): Promise<Appointment[]> {
+  ): Promise<{ completed: Appointment[]; appointments: Appointment[] }> {
     const appointments = await this.getAppointments();
     const completed: Appointment[] = [];
     let changed = false;
@@ -370,7 +370,7 @@ export class S3Service {
       await this.saveAppointments(appointments);
     }
 
-    return completed;
+    return { completed, appointments };
   }
 }
 

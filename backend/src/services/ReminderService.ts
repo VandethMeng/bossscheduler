@@ -25,15 +25,8 @@ export class ReminderService {
   }
 
   start(): void {
-    const dailyCron = `0 ${this.dailySummaryHour} * * *`;
-
-    cron.schedule(dailyCron, () => {
-      void this.sendDailySummary();
-    }, { timezone: this.timezone });
-
     cron.schedule('* * * * *', () => {
-      void this.checkMeetingReminders();
-      void this.completeExpiredMeetings();
+      void this.runMinuteTasks();
     }, { timezone: this.timezone });
 
     void this.completeExpiredMeetings();
@@ -41,6 +34,18 @@ export class ReminderService {
     console.log(
       `Reminder scheduler started (timezone: ${this.timezone}, daily at ${this.dailySummaryHour}:00, ${this.minutesBeforeMeeting} min before meetings, auto-complete when end time passes)`
     );
+  }
+
+  private async runMinuteTasks(): Promise<void> {
+    const nowMinutes = getMinutesSinceMidnight(this.timezone);
+    const summaryMinute = this.dailySummaryHour * 60;
+
+    if (nowMinutes === summaryMinute) {
+      await this.sendDailySummary();
+    }
+
+    await this.checkMeetingReminders();
+    await this.completeExpiredMeetings();
   }
 
   private getScheduledAppointmentsForDate(
@@ -115,7 +120,7 @@ export class ReminderService {
 
   async completeExpiredMeetings(): Promise<void> {
     try {
-      const completed = await s3Service.completeExpiredAppointments(this.timezone);
+      const { completed } = await s3Service.completeExpiredAppointments(this.timezone);
 
       if (completed.length > 0) {
         console.log(

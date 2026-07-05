@@ -100,7 +100,7 @@ export const appointmentFilterValidation = [
 ];
 
 export const getAppointments = asyncHandler(async (req: Request, res: Response) => {
-  const appointments = await s3Service.getAppointments();
+  const { appointments } = await s3Service.completeExpiredAppointments();
   const filtered = s3Service.filterAppointments(appointments, {
     search: req.query.search as string | undefined,
     date: req.query.date as string | undefined,
@@ -117,7 +117,16 @@ export const getAppointments = asyncHandler(async (req: Request, res: Response) 
 
 export const getAppointmentById = asyncHandler(async (req: Request, res: Response) => {
   const id = String(req.params.id);
-  const appointment = await s3Service.getAppointmentById(id);
+  const { appointments } = await s3Service.completeExpiredAppointments();
+  const appointment = appointments.find((apt) => apt.id === id);
+
+  if (!appointment) {
+    res.status(404).json({
+      success: false,
+      message: 'Appointment not found',
+    });
+    return;
+  }
 
   res.status(200).json({
     success: true,
